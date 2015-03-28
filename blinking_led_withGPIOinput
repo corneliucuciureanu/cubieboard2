@@ -1,0 +1,47 @@
+#!/bin/bash
+Gpio_pin=31
+
+#--- comment this section if u do not want to read from comand line the pin number
+#--- use this picture from cubian documentation 
+#--- https://raw.githubusercontent.com/cubieplayer/static_files/gh-pages/images/gpio_defination_large.jpg
+echo "Enter your blinking GPIO pin number: "
+read Gpio_pin
+if [ -z $Gpio_pin ]
+then
+	echo "No argument supplied"
+	exit 1
+fi
+#--- end read section   
+
+echo "START"
+#--- Initialisation : export , direction 
+#--- export the pin
+echo $Gpio_pin > /sys/class/gpio/export
+sleep 1
+#--- look for pin name when exported 
+gpio=( $(ls /sys/class/gpio | grep $Gpio_pin ) )
+#echo "nr: " ${#gpio[@]}
+echo "U should connect to ground (GND) and pin" $Gpio_pin "on cubian documentation" 
+echo "Pin name:" ${gpio[@]} 
+
+#--- set as output pin
+echo out > /sys/class/gpio/${gpio[@]}/direction
+#cat /sys/class/gpio/${gpio[@]}/value
+
+#--- led test without blinking - led on 
+#echo 1 > /sys/class/gpio/${gpio[@]}/value
+
+for (( i = 1 ; i <= 100 ; i++ )); do
+  echo "blink" $i
+  #--- led on
+  echo 1 > /sys/class/gpio/${gpio[@]}/value
+  sleep 0.1 
+  #--- led off    
+  echo 0 > /sys/class/gpio/${gpio[@]}/value
+  sleep 0.1
+done
+
+#--- clean up
+#--- unexport the pin
+echo $Gpio_pin > /sys/class/gpio/unexport
+echo "FINISH"
